@@ -1,0 +1,140 @@
+<Window x:Class="Snipper.EditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Snipper — Edit" Height="640" Width="980"
+        WindowStartupLocation="CenterScreen" Background="#FF0E1316">
+    <Grid Margin="14">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ Preview + transport ============ -->
+        <Grid Grid.Column="0" Margin="0,0,14,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Video + live caption overlay -->
+            <Border Grid.Row="0" Background="Black" CornerRadius="4">
+                <Grid>
+                    <MediaElement x:Name="Player" LoadedBehavior="Manual"
+                                  UnloadedBehavior="Manual" ScrubbingEnabled="True"
+                                  Stretch="Uniform"
+                                  MediaOpened="Player_MediaOpened"
+                                  MediaEnded="Player_MediaEnded"/>
+                    <!-- Caption preview (approximate; real outline is baked at export) -->
+                    <TextBlock x:Name="TopPreview" VerticalAlignment="Top"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"
+                               FontFamily="Impact" Foreground="White"
+                               FontSize="40" TextAlignment="Center" TextWrapping="Wrap">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="4" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                    <TextBlock x:Name="BottomPreview" VerticalAlignment="Bottom"
+                               HorizontalAlignment="Center" Margin="0,0,0,14"
+                               FontFamily="Impact" Foreground="White"
+                               FontSize="40" TextAlignment="Center" TextWrapping="Wrap">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="Black" ShadowDepth="0" BlurRadius="4" Opacity="1"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <!-- Transport -->
+            <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="PlayBtn" Grid.Column="0" Content="▶" Width="40" Height="30"
+                        Click="Play_Click" Background="#FF222C30" Foreground="#FFE8ECEE"
+                        BorderThickness="0" FontSize="14" Cursor="Hand"/>
+                <Slider x:Name="PosSlider" Grid.Column="1" Margin="10,0" VerticalAlignment="Center"
+                        Minimum="0" Maximum="1" SmallChange="0.04" LargeChange="0.5"
+                        ValueChanged="PosSlider_ValueChanged"/>
+                <TextBlock x:Name="TimeText" Grid.Column="2" Text="0.0 / 0.0s"
+                           Foreground="#FF9AA4AA" FontFamily="Consolas" VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Trim -->
+            <Grid Grid.Row="2" Margin="0,10,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="⟦ Set In" Click="SetIn_Click" Padding="8,4"
+                        Background="#FF222C30" Foreground="#FFE8ECEE" BorderThickness="0" Cursor="Hand"/>
+                <TextBlock x:Name="InText" Grid.Column="1" Text="in 0.0s" Margin="10,0"
+                           Foreground="#FF35E0C0" FontFamily="Consolas" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Content="Set Out ⟧" Click="SetOut_Click" Padding="8,4"
+                        Background="#FF222C30" Foreground="#FFE8ECEE" BorderThickness="0" Cursor="Hand"/>
+                <TextBlock x:Name="OutText" Grid.Column="3" Text="out 0.0s" Margin="10,0"
+                           Foreground="#FF35E0C0" FontFamily="Consolas" VerticalAlignment="Center"/>
+                <Button Grid.Column="4" Content="↺ Reset" Click="ResetTrim_Click" Padding="8,4"
+                        Background="#FF222C30" Foreground="#FFAEB6BB" BorderThickness="0" Cursor="Hand"/>
+            </Grid>
+        </Grid>
+
+        <!-- ============ Controls panel ============ -->
+        <Border Grid.Column="1" Background="#FF141B1F" CornerRadius="6" Padding="14">
+            <StackPanel>
+                <TextBlock Text="CAPTIONS" Foreground="#FF6B7780" FontSize="11" FontWeight="Bold"/>
+                <TextBlock Text="Top" Foreground="#FFAEB6BB" FontSize="12" Margin="0,8,0,2"/>
+                <TextBox x:Name="TopBox" TextChanged="Caption_Changed"/>
+                <TextBlock Text="Bottom" Foreground="#FFAEB6BB" FontSize="12" Margin="0,10,0,2"/>
+                <TextBox x:Name="BottomBox" TextChanged="Caption_Changed"/>
+
+                <TextBlock Text="Caption size" Foreground="#FFAEB6BB" FontSize="12" Margin="0,12,0,2"/>
+                <Slider x:Name="FontSlider" Minimum="18" Maximum="96" Value="48"
+                        ValueChanged="Caption_Changed"/>
+
+                <Rectangle Height="1" Fill="#FF273035" Margin="0,16"/>
+
+                <TextBlock Text="EXPORT" Foreground="#FF6B7780" FontSize="11" FontWeight="Bold"/>
+                <TextBlock Text="Format" Foreground="#FFAEB6BB" FontSize="12" Margin="0,8,0,2"/>
+                <ComboBox x:Name="FormatBox" SelectedIndex="0">
+                    <ComboBoxItem Content="GIF (universal meme)"/>
+                    <ComboBoxItem Content="MP4 (small, Discord/Twitter)"/>
+                    <ComboBoxItem Content="MOV"/>
+                    <ComboBoxItem Content="WebP (animated)"/>
+                    <ComboBoxItem Content="APNG"/>
+                </ComboBox>
+
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                        <TextBlock Text="FPS" Foreground="#FFAEB6BB" FontSize="12"/>
+                        <TextBox x:Name="FpsBox" Text="20"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                        <TextBlock Text="Width (0=orig)" Foreground="#FFAEB6BB" FontSize="12"/>
+                        <TextBox x:Name="WidthBox" Text="480"/>
+                    </StackPanel>
+                </Grid>
+
+                <Button x:Name="ExportBtn" Content="⬇  Export" Click="Export_Click"
+                        Height="44" Margin="0,16,0,0" Background="#FF35E0C0"
+                        Foreground="#FF06100D" BorderThickness="0" FontSize="15"
+                        FontWeight="Bold" Cursor="Hand"/>
+
+                <ProgressBar x:Name="Progress" Height="4" Margin="0,10,0,0"
+                             IsIndeterminate="False" Visibility="Collapsed"
+                             Background="#FF273035" Foreground="#FF35E0C0"/>
+                <TextBlock x:Name="StatusText" Foreground="#FF9AA4AA" FontSize="11"
+                           Margin="0,8,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

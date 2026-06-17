@@ -1,0 +1,54 @@
+<Window x:Class="Snipper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Snipper" Height="420" Width="380"
+        WindowStartupLocation="CenterScreen"
+        Background="#FF0E1316" ResizeMode="CanMinimize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <TextBlock Text="✂  SNIPPER" Foreground="#FF35E0C0" FontSize="26"
+                       FontWeight="Bold" FontFamily="Consolas"/>
+            <TextBlock Text="clip any video on screen → gif / mp4" Foreground="#FF6B7780"
+                       FontSize="12" Margin="2,0,0,0"/>
+        </StackPanel>
+
+        <Border Grid.Row="1" Margin="0,16,0,0" Padding="10,6" CornerRadius="6"
+                Background="#FF161D21">
+            <TextBlock x:Name="FfmpegStatus" FontFamily="Consolas" FontSize="11"
+                       TextWrapping="Wrap" Foreground="#FF9AA4AA"/>
+        </Border>
+
+        <StackPanel Grid.Row="2" Margin="0,18,0,0">
+            <TextBlock Text="Frame rate" Foreground="#FFAEB6BB" FontSize="12"/>
+            <ComboBox x:Name="FpsBox" Margin="0,4,0,12" SelectedIndex="1">
+                <ComboBoxItem Content="12 fps (small files)"/>
+                <ComboBoxItem Content="20 fps (recommended)"/>
+                <ComboBoxItem Content="30 fps (smooth)"/>
+            </ComboBox>
+
+            <CheckBox x:Name="CursorBox" Content="Capture mouse cursor"
+                      Foreground="#FFAEB6BB" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Auto-stop after (seconds)" Foreground="#FFAEB6BB" FontSize="12"/>
+            <TextBox x:Name="MaxSecBox" Text="60" Margin="0,4,0,0" Width="80"
+                     HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <Button x:Name="NewSnipBtn" Grid.Row="3" Content="●  New Snip"
+                Click="NewSnip_Click" Height="48" Margin="0,8,0,0"
+                Background="#FF35E0C0" Foreground="#FF06100D" BorderThickness="0"
+                FontSize="17" FontWeight="Bold" Cursor="Hand"/>
+
+        <TextBlock x:Name="Hint" Grid.Row="4" Margin="0,10,0,0" FontSize="11"
+                   Foreground="#FF6B7780" TextWrapping="Wrap"
+                   Text="Drag a box over any playing video. Press Stop when done, then trim &amp; caption."/>
+    </Grid>
+</Window>

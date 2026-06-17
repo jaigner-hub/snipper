@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+
+# Bundled ffmpeg binary — don't commit it (large; download per the README)
+ffmpeg/
+ffmpeg.exe

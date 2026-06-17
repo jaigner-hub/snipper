@@ -1,0 +1,28 @@
+<Window x:Class="Snipper.RecordBarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="Manual">
+    <Border Background="#F0141A1E" CornerRadius="8" Padding="14,8"
+            BorderBrush="#FF35E0C0" BorderThickness="1">
+        <StackPanel Orientation="Horizontal">
+            <Ellipse x:Name="RecDot" Width="12" Height="12" Fill="#FFE03535"
+                     VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock x:Name="ElapsedText" Text="REC  0.0s" Foreground="#FFEDEDED"
+                       FontFamily="Consolas" FontSize="15" VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
+            <Button x:Name="StopBtn" Content="■ Stop" Padding="12,4" Click="Stop_Click"
+                    Background="#FF35E0C0" Foreground="#FF0A0E10" BorderThickness="0"
+                    FontWeight="Bold" Cursor="Hand"/>
+            <Button x:Name="CancelBtn" Content="Cancel" Padding="10,4" Margin="8,0,0,0"
+                    Click="Cancel_Click" Background="#FF2A3236" Foreground="#FFCDD3D6"
+                    BorderThickness="0" Cursor="Hand"/>
+        </StackPanel>
+    </Border>
+</Window>
