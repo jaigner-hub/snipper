@@ -46,6 +46,30 @@ dotnet run
 
 Or open the folder in Visual Studio 2022 and press F5.
 
+## Building an installer
+
+Produces a self-contained `Snipper-<ver>-setup.exe` that needs **no
+prerequisites** on the target PC (the .NET runtime and ffmpeg are bundled). It
+installs per-user, so there's no admin/UAC prompt.
+
+Needs **.NET SDK 8** and **Inno Setup 6** (https://jrsoftware.org/isdl.php).
+From a Windows PowerShell:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File packaging\build-installer.ps1
+```
+
+That publishes to `publish\` and compiles `packaging\Snipper.iss` into
+`Snipper-<ver>-setup.exe` at the repo root. To bump the version, edit
+`MyAppVersion` in `packaging\Snipper.iss` (and `<Version>` in `Snipper.csproj`).
+
+> The installer is **unsigned**, so Windows SmartScreen will warn on first run
+> ("More info" → "Run anyway"). Expect a ~120–150 MB installer — that's the
+> bundled runtime + ffmpeg, the cost of zero prerequisites. For a much smaller
+> build that requires the user to install the **.NET 8 Desktop Runtime**, change
+> `--self-contained true` to `--self-contained false` in
+> `packaging\build-installer.ps1`.
+
 ## Trimming & the countdown
 
 Two features make it easy to grab *exactly* the moment you want:

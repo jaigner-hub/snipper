@@ -10,6 +10,7 @@
     <AssemblyName>Snipper</AssemblyName>
     <RootNamespace>Snipper</RootNamespace>
     <Version>0.1.0</Version>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('ffmpeg')">
