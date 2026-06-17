@@ -46,6 +46,19 @@ dotnet run
 
 Or open the folder in Visual Studio 2022 and press F5.
 
+## Trimming & the countdown
+
+Two features make it easy to grab *exactly* the moment you want:
+
+- **Countdown before recording** (control panel, default 3s): pause your video,
+  click New Snip, drag the region — then a big 3·2·1 counts down. The countdown
+  is click-through, so you press Play on the video *behind* it and recording
+  starts the instant it hits zero. No more dead paused frames at the front.
+- **Drag-handle trim bar** (editor): the timeline under the video has two end
+  handles. Drag the left one to cut dead air off the front and the right one to
+  cut the back — the preview jumps to that exact frame as you drag. The white
+  line is the playhead; the cyan band is what gets exported.
+
 ## Tips & meme captions
 
 - Captions are auto-uppercased and rendered in **Impact** with a black outline

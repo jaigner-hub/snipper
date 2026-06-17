@@ -57,7 +57,15 @@ public partial class MainWindow : Window
             return;
         }
 
-        // 2) Record it. Recording starts immediately; the bar controls stop/cancel.
+        // 2) Optional countdown so you can un-pause the video before capture.
+        int countdown = CountdownBox.SelectedIndex switch { 1 => 3, 2 => 5, _ => 0 };
+        if (countdown > 0)
+        {
+            var cd = new CountdownWindow(countdown);
+            cd.ShowDialog();
+        }
+
+        // 3) Record it. Recording starts immediately; the bar controls stop/cancel.
         var recorder = new Recorder();
         try
         {
@@ -83,7 +91,7 @@ public partial class MainWindow : Window
 
         string clip = await recorder.StopAsync();
 
-        // 3) Edit + export.
+        // 4) Edit + export.
         var editor = new EditorWindow(clip, settings.Fps);
         editor.Owner = this;
         Show();

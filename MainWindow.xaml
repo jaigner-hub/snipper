@@ -34,6 +34,13 @@
                 <ComboBoxItem Content="30 fps (smooth)"/>
             </ComboBox>
 
+            <TextBlock Text="Countdown before recording" Foreground="#FFAEB6BB" FontSize="12"/>
+            <ComboBox x:Name="CountdownBox" Margin="0,4,0,12" SelectedIndex="1">
+                <ComboBoxItem Content="None (start immediately)"/>
+                <ComboBoxItem Content="3 seconds"/>
+                <ComboBoxItem Content="5 seconds"/>
+            </ComboBox>
+
             <CheckBox x:Name="CursorBox" Content="Capture mouse cursor"
                       Foreground="#FFAEB6BB" Margin="0,0,0,10"/>
 

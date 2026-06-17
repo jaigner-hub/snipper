@@ -15,6 +15,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Video + live caption overlay -->
@@ -62,8 +63,36 @@
                            Foreground="#FF9AA4AA" FontFamily="Consolas" VerticalAlignment="Center"/>
             </Grid>
 
+            <!-- Visual trim bar: drag the end handles to cut front/back -->
+            <Canvas x:Name="TrimCanvas" Grid.Row="2" Height="34" Margin="0,10,0,0"
+                    Background="Transparent" SizeChanged="TrimCanvas_SizeChanged"
+                    ClipToBounds="False">
+                <Canvas.Resources>
+                    <ControlTemplate x:Key="HandleTemplate" TargetType="Thumb">
+                        <Border Background="#FF35E0C0" CornerRadius="3" Width="12" Height="28">
+                            <TextBlock Text="┊" Foreground="#FF06100D" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Canvas.Resources>
+                <!-- full track -->
+                <Border x:Name="TrimTrack" Canvas.Top="13" Height="8" CornerRadius="4"
+                        Background="#FF222C30"/>
+                <!-- kept region -->
+                <Border x:Name="TrimSel" Canvas.Top="13" Height="8" CornerRadius="4"
+                        Background="#FF35E0C0"/>
+                <!-- playhead -->
+                <Rectangle x:Name="Playhead" Canvas.Top="3" Width="2" Height="28"
+                           Fill="#FFEDEDED"/>
+                <!-- end handles -->
+                <Thumb x:Name="LeftHandle" Canvas.Top="3" Template="{StaticResource HandleTemplate}"
+                       Cursor="SizeWE" DragDelta="LeftHandle_DragDelta"/>
+                <Thumb x:Name="RightHandle" Canvas.Top="3" Template="{StaticResource HandleTemplate}"
+                       Cursor="SizeWE" DragDelta="RightHandle_DragDelta"/>
+            </Canvas>
+
             <!-- Trim -->
-            <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid Grid.Row="3" Margin="0,10,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>

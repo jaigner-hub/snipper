@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using Microsoft.Win32;
 
@@ -47,6 +49,8 @@ public partial class EditorWindow : Window
         PosSlider.Maximum = _duration;
         UpdateTrimLabels();
         UpdateTimeLabel(0);
+        LayoutTrim();
+        UpdatePlayhead(0);
         _timer.Start();
     }
 
@@ -70,6 +74,7 @@ public partial class EditorWindow : Window
         PosSlider.Value = pos;
         _suppressSlider = false;
         UpdateTimeLabel(pos);
+        UpdatePlayhead(pos);
     }
 
     private void Play_Click(object sender, RoutedEventArgs e)
@@ -89,6 +94,7 @@ public partial class EditorWindow : Window
         if (_suppressSlider) return;       // came from the timer, not the user
         SeekTo(e.NewValue);
         UpdateTimeLabel(e.NewValue);
+        UpdatePlayhead(e.NewValue);
     }
 
     private void SeekTo(double seconds)
@@ -103,6 +109,7 @@ public partial class EditorWindow : Window
         _in = Math.Min(PosSlider.Value, _out - 0.05);
         if (_in < 0) _in = 0;
         UpdateTrimLabels();
+        LayoutTrim();
     }
 
     private void SetOut_Click(object sender, RoutedEventArgs e)
@@ -110,18 +117,76 @@ public partial class EditorWindow : Window
         _out = Math.Max(PosSlider.Value, _in + 0.05);
         if (_out > _duration) _out = _duration;
         UpdateTrimLabels();
+        LayoutTrim();
     }
 
     private void ResetTrim_Click(object sender, RoutedEventArgs e)
     {
         _in = 0; _out = _duration;
         UpdateTrimLabels();
+        LayoutTrim();
     }
 
     private void UpdateTrimLabels()
     {
         InText.Text = $"in {_in:0.0}s";
         OutText.Text = $"out {_out:0.0}s  ({_out - _in:0.0}s clip)";
+    }
+
+    // ---- visual trim bar (drag handles) -----------------------------------
+
+    private const double HandleW = 12;
+
+    private void TrimCanvas_SizeChanged(object sender, SizeChangedEventArgs e) => LayoutTrim();
+
+    private void LeftHandle_DragDelta(object sender, DragDeltaEventArgs e)
+    {
+        double w = TrimCanvas.ActualWidth;
+        if (w <= 0 || _duration <= 0) return;
+        double dt = e.HorizontalChange / w * _duration;
+        _in = Math.Clamp(_in + dt, 0, _out - 0.05);
+        UpdateTrimLabels();
+        LayoutTrim();
+        SeekTo(_in);                 // jump preview to the new front edge
+        UpdatePlayhead(_in);
+        if (_playing) { Player.Pause(); _playing = false; PlayBtn.Content = "▶"; }
+    }
+
+    private void RightHandle_DragDelta(object sender, DragDeltaEventArgs e)
+    {
+        double w = TrimCanvas.ActualWidth;
+        if (w <= 0 || _duration <= 0) return;
+        double dt = e.HorizontalChange / w * _duration;
+        _out = Math.Clamp(_out + dt, _in + 0.05, _duration);
+        UpdateTrimLabels();
+        LayoutTrim();
+        SeekTo(_out);                // jump preview to the new back edge
+        UpdatePlayhead(_out);
+        if (_playing) { Player.Pause(); _playing = false; PlayBtn.Content = "▶"; }
+    }
+
+    private void LayoutTrim()
+    {
+        double w = TrimCanvas.ActualWidth;
+        if (w <= 0 || _duration <= 0) return;
+
+        TrimTrack.Width = w;
+
+        double inX = _in / _duration * w;
+        double outX = _out / _duration * w;
+
+        Canvas.SetLeft(TrimSel, inX);
+        TrimSel.Width = Math.Max(0, outX - inX);
+
+        Canvas.SetLeft(LeftHandle, Math.Clamp(inX - HandleW / 2, 0, w - HandleW));
+        Canvas.SetLeft(RightHandle, Math.Clamp(outX - HandleW / 2, 0, w - HandleW));
+    }
+
+    private void UpdatePlayhead(double pos)
+    {
+        double w = TrimCanvas.ActualWidth;
+        if (w <= 0 || _duration <= 0) return;
+        Canvas.SetLeft(Playhead, Math.Clamp(pos / _duration * w, 0, w - 2));
     }
 
     private void UpdateTimeLabel(double pos) =>
