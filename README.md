@@ -73,4 +73,10 @@ Or open the folder in Visual Studio 2022 and press F5.
 - Global hotkey to start a snip without focusing the app.
 - Import-a-file mode (scrub an existing video instead of live capture).
 - Audio capture for MP4/MOV.
-- One-click "copy GIF to clipboard".
+
+## Copy GIF to clipboard
+
+The editor's **Copy GIF to clipboard** button builds a GIF (using your current
+trim/captions/fps/width) and puts it on the clipboard as a file drop, raw GIF
+bytes, and a first-frame bitmap. Paste with **Ctrl+V** into Discord/Slack/Teams/
+chat and it uploads as an animated GIF.

@@ -129,6 +129,11 @@
                         Foreground="#FF06100D" BorderThickness="0" FontSize="15"
                         FontWeight="Bold" Cursor="Hand"/>
 
+                <Button x:Name="CopyGifBtn" Content="📋  Copy GIF to clipboard"
+                        Click="CopyGif_Click" Height="34" Margin="0,8,0,0"
+                        Background="#FF222C30" Foreground="#FFE8ECEE" BorderThickness="0"
+                        FontSize="13" Cursor="Hand"/>
+
                 <ProgressBar x:Name="Progress" Height="4" Margin="0,10,0,0"
                              IsIndeterminate="False" Visibility="Collapsed"
                              Background="#FF273035" Foreground="#FF35E0C0"/>

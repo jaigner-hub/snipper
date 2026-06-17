@@ -214,9 +214,66 @@ public partial class EditorWindow : Window
         }
     }
 
+    private async void CopyGif_Click(object sender, RoutedEventArgs e)
+    {
+        int.TryParse(FpsBox.Text, out int fps);
+        if (fps <= 0) fps = 20;
+        int.TryParse(WidthBox.Text, out int width);
+
+        // Always a GIF for the clipboard, to a temp file we leave in place
+        // (the clipboard file-drop references the path after we return).
+        string dir = Path.Combine(Path.GetTempPath(), "Snipper");
+        Directory.CreateDirectory(dir);
+        string outPath = Path.Combine(dir, $"clip_{Guid.NewGuid():N}.gif");
+
+        var job = new ExportJob
+        {
+            SourcePath = _sourcePath,
+            OutputPath = outPath,
+            Format = OutputFormat.Gif,
+            TrimStart = _in,
+            TrimEnd = _out,
+            Fps = fps,
+            Width = Math.Max(0, width),
+            Captions = new()
+            {
+                new Caption { Text = TopBox.Text ?? "", IsBottom = false,
+                    VPosition = 0.05, FontSize = (int)FontSlider.Value },
+                new Caption { Text = BottomBox.Text ?? "", IsBottom = true,
+                    VPosition = 0.05, FontSize = (int)FontSlider.Value },
+            },
+        };
+
+        SetBusy(true, "Building GIF for clipboard…");
+        var (ok, log) = await Exporter.ExportAsync(job);
+
+        if (ok)
+        {
+            try
+            {
+                ClipboardHelper.CopyGif(outPath);
+                SetBusy(false, "✓ GIF copied — paste into Discord/chat with Ctrl+V");
+            }
+            catch (Exception ex)
+            {
+                SetBusy(false, "✗ Couldn't copy to clipboard.");
+                MessageBox.Show(this, "Clipboard copy failed:\n" + ex.Message, "Snipper",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        else
+        {
+            SetBusy(false, "✗ GIF build failed. See details.");
+            string tail = log.Length > 1500 ? log[^1500..] : log;
+            MessageBox.Show(this, "ffmpeg failed:\n\n" + tail, "Snipper — clipboard error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void SetBusy(bool busy, string? status)
     {
         ExportBtn.IsEnabled = !busy;
+        CopyGifBtn.IsEnabled = !busy;
         Progress.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
         Progress.IsIndeterminate = busy;
         if (status != null) StatusText.Text = status;
