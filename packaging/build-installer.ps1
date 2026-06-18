@@ -34,8 +34,17 @@ try {
     & $iscc "packaging\Snipper.iss"
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup compile failed." }
 
-    $setup = Get-ChildItem -Path . -Filter "Snipper-*-setup.exe" | Select-Object -First 1
-    Write-Host "`n==> Done. Installer: $($setup.FullName)" -ForegroundColor Green
+    # Report the installer we actually just built. Read the version straight from
+    # the .iss rather than globbing Snipper-*-setup.exe — otherwise a stale build
+    # from a previous version (e.g. 0.1.0) sorts first and gets reported instead.
+    $ver = (Select-String -Path (Join-Path $PSScriptRoot "Snipper.iss") `
+            -Pattern '#define\s+MyAppVersion\s+"([^"]+)"' | Select-Object -First 1).Matches[0].Groups[1].Value
+    $setup = Join-Path $root "Snipper-$ver-setup.exe"
+    if (Test-Path $setup) {
+        Write-Host "`n==> Done. Installer: $setup" -ForegroundColor Green
+    } else {
+        Write-Warning "Build reported success but $setup was not found."
+    }
 }
 finally {
     Pop-Location
