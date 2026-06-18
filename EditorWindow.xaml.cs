@@ -17,6 +17,8 @@ public partial class EditorWindow : Window
     private double _out;
     private bool _playing;
     private bool _suppressSlider;      // guards programmatic slider updates
+    private int _srcWidth;             // native clip dimensions, for caption fit
+    private int _srcHeight;
 
     public EditorWindow(string sourcePath, int captureFps)
     {
@@ -43,6 +45,10 @@ public partial class EditorWindow : Window
             ? Player.NaturalDuration.TimeSpan.TotalSeconds
             : 0;
         if (_duration <= 0) _duration = 0.1;
+
+        _srcWidth = Player.NaturalVideoWidth;
+        _srcHeight = Player.NaturalVideoHeight;
+        UpdatePreview();
 
         _in = 0;
         _out = _duration;
@@ -194,15 +200,52 @@ public partial class EditorWindow : Window
 
     // ---- captions (live preview) ------------------------------------------
 
-    private void Caption_Changed(object sender, RoutedEventArgs e)
+    private void Caption_Changed(object sender, RoutedEventArgs e) => UpdatePreview();
+
+    private void PreviewArea_SizeChanged(object sender, SizeChangedEventArgs e) => UpdatePreview();
+
+    /// <summary>
+    /// Lay out the caption previews to match what the export will actually produce:
+    /// the same auto-fit font size and frame width, positioned within the
+    /// letterboxed video rectangle (the MediaElement uses Stretch=Uniform).
+    /// </summary>
+    private void UpdatePreview()
     {
         if (TopPreview == null) return; // during init
         TopPreview.Text = (TopBox.Text ?? "").ToUpperInvariant();
         BottomPreview.Text = (BottomBox.Text ?? "").ToUpperInvariant();
-        // Scale preview font relative to a nominal 480px-wide design.
-        double fs = FontSlider.Value;
-        TopPreview.FontSize = fs * 0.85;
-        BottomPreview.FontSize = fs * 0.85;
+
+        if (_srcWidth <= 0 || _srcHeight <= 0) return;
+
+        int.TryParse(WidthBox.Text, out int width);
+        int renderWidth = width > 0 ? width : _srcWidth;
+        int renderHeight = width > 0
+            ? (int)Math.Round((double)_srcHeight * renderWidth / _srcWidth)
+            : _srcHeight;
+
+        double cellW = PreviewArea.ActualWidth, cellH = PreviewArea.ActualHeight;
+        if (cellW <= 0 || cellH <= 0) return;
+
+        // Uniform-fit the frame into the preview cell → the displayed video rect.
+        double scale = Math.Min(cellW / renderWidth, cellH / renderHeight);
+        double dispW = renderWidth * scale, dispH = renderHeight * scale;
+        double barY = (cellH - dispH) / 2;   // letterbox bar above/below the video
+
+        int slider = (int)FontSlider.Value;
+        ApplyPreviewCaption(TopPreview, false, renderWidth, renderHeight, dispW, dispH, barY, scale, slider);
+        ApplyPreviewCaption(BottomPreview, true, renderWidth, renderHeight, dispW, dispH, barY, scale, slider);
+    }
+
+    private static void ApplyPreviewCaption(System.Windows.Controls.TextBlock tb, bool bottom,
+        int renderWidth, int renderHeight, double dispW, double dispH, double barY,
+        double scale, int slider)
+    {
+        if (string.IsNullOrWhiteSpace(tb.Text)) return;
+        int fs = Exporter.FitFontSize(tb.Text, renderWidth, renderHeight, slider);
+        tb.FontSize = fs * scale;          // frame px → preview px
+        tb.MaxWidth = dispW;               // wrap to the same frame width
+        double margin = barY + dispH * 0.05;
+        tb.Margin = bottom ? new Thickness(0, 0, 0, margin) : new Thickness(0, margin, 0, 0);
     }
 
     // ---- export ------------------------------------------------------------
@@ -248,6 +291,8 @@ public partial class EditorWindow : Window
             TrimEnd = _out,
             Fps = fps,
             Width = Math.Max(0, width),
+            SourceWidth = _srcWidth,
+            SourceHeight = _srcHeight,
             Captions = new()
             {
                 new Caption { Text = TopBox.Text ?? "", IsBottom = false,
@@ -273,9 +318,7 @@ public partial class EditorWindow : Window
         else
         {
             StatusText.Text = "✗ Export failed. See details.";
-            string tail = log.Length > 1500 ? log[^1500..] : log;
-            MessageBox.Show(this, "ffmpeg failed:\n\n" + tail, "Snipper — export error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            ErrorWindow.Show(this, "Export failed — ffmpeg returned an error.", log);
         }
     }
 
@@ -300,6 +343,8 @@ public partial class EditorWindow : Window
             TrimEnd = _out,
             Fps = fps,
             Width = Math.Max(0, width),
+            SourceWidth = _srcWidth,
+            SourceHeight = _srcHeight,
             Captions = new()
             {
                 new Caption { Text = TopBox.Text ?? "", IsBottom = false,
@@ -322,16 +367,13 @@ public partial class EditorWindow : Window
             catch (Exception ex)
             {
                 SetBusy(false, "✗ Couldn't copy to clipboard.");
-                MessageBox.Show(this, "Clipboard copy failed:\n" + ex.Message, "Snipper",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                ErrorWindow.Show(this, "Clipboard copy failed.", ex.ToString());
             }
         }
         else
         {
             SetBusy(false, "✗ GIF build failed. See details.");
-            string tail = log.Length > 1500 ? log[^1500..] : log;
-            MessageBox.Show(this, "ffmpeg failed:\n\n" + tail, "Snipper — clipboard error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            ErrorWindow.Show(this, "GIF build failed — ffmpeg returned an error.", log);
         }
     }
 

@@ -80,7 +80,7 @@ public static class Ffmpeg
     /// exit code and the captured stderr (ffmpeg logs progress to stderr).
     /// </summary>
     public static async Task<(int exitCode, string log)> RunAsync(
-        string args, CancellationToken ct = default)
+        string args, CancellationToken ct = default, string? workingDir = null)
     {
         var exe = Path ?? throw new FileNotFoundException(
             "ffmpeg.exe not found. Put it next to Snipper.exe, in ./ffmpeg/, or on PATH.");
@@ -93,6 +93,7 @@ public static class Ffmpeg
             CreateNoWindow = true,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
+            WorkingDirectory = workingDir ?? "",
         };
         using var proc = new Process { StartInfo = psi };
         var log = new System.Text.StringBuilder();

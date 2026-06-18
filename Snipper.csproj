@@ -9,7 +9,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>Snipper</AssemblyName>
     <RootNamespace>Snipper</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 

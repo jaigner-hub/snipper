@@ -20,7 +20,7 @@
 
             <!-- Video + live caption overlay -->
             <Border Grid.Row="0" Background="Black" CornerRadius="4">
-                <Grid>
+                <Grid x:Name="PreviewArea" SizeChanged="PreviewArea_SizeChanged">
                     <MediaElement x:Name="Player" LoadedBehavior="Manual"
                                   UnloadedBehavior="Manual" ScrubbingEnabled="True"
                                   Stretch="Uniform"

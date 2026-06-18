@@ -11,8 +11,12 @@ namespace Snipper;
 public sealed class Recorder
 {
     private Process? _proc;
+    private readonly System.Text.StringBuilder _log = new();
     public string OutputPath { get; }
     public bool IsRecording => _proc is { HasExited: false };
+
+    /// <summary>Everything ffmpeg wrote to stderr during the capture (progress + errors).</summary>
+    public string Log => _log.ToString();
 
     public Recorder()
     {
@@ -42,7 +46,9 @@ public sealed class Recorder
             $"-c:v libx264 -preset ultrafast -crf 18 -pix_fmt yuv420p " +
             $"-movflags +faststart -y \"{OutputPath}\"";
 
-        _proc = Ffmpeg.Start(args);
+        // Drain stderr: we keep the log for diagnostics AND draining stops ffmpeg
+        // from blocking on a full stderr pipe during a long capture.
+        _proc = Ffmpeg.Start(args, (_, e) => { if (e.Data != null) _log.AppendLine(e.Data); });
     }
 
     /// <summary>

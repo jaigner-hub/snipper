@@ -91,6 +91,22 @@ public partial class MainWindow : Window
 
         string clip = await recorder.StopAsync();
 
+        // A successful gdigrab capture is at least a few KB. A tiny/missing file
+        // means ffmpeg failed to capture (bad region, DRM/HW-overlay content,
+        // off-desktop offset, etc.) — show its log instead of a black 0s clip.
+        long size = 0;
+        try { if (System.IO.File.Exists(clip)) size = new System.IO.FileInfo(clip).Length; } catch { }
+        if (size < 10_000)
+        {
+            ErrorWindow.Show(this,
+                "Recording produced an empty clip (ffmpeg captured no frames). " +
+                "Common causes: the region is off-screen, your display layout/DPI " +
+                "changed, or the content is DRM/hardware-overlay (e.g. a fullscreen " +
+                "game or a protected video) which gdigrab can't read.",
+                recorder.Log);
+            return;
+        }
+
         // 4) Edit + export.
         var editor = new EditorWindow(clip, settings.Fps);
         editor.Owner = this;

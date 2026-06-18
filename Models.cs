@@ -45,5 +45,11 @@ public sealed class ExportJob
     public int Fps { get; set; } = 20;
     /// <summary>Output width in px; height auto. 0 = keep source width.</summary>
     public int Width { get; set; } = 0;
+    /// <summary>Native width of the source clip in px. Used to word-wrap captions
+    /// to the frame when <see cref="Width"/> is 0 (keep-source). 0 = unknown.</summary>
+    public int SourceWidth { get; set; } = 0;
+    /// <summary>Native height of the source clip in px. Used to auto-fit caption
+    /// font size so wrapped text doesn't overflow the frame. 0 = unknown.</summary>
+    public int SourceHeight { get; set; } = 0;
     public List<Caption> Captions { get; set; } = new();
 }
